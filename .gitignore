@@ -1,1 +1,12 @@
 .DS_Store
+
+/MYMETA.yml
+
+/Makefile
+
+/Build
+
+/_build
+
+/blib
+/MYMETA.json
