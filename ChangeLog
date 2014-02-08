@@ -1,4 +1,8 @@
 Changes in: Mail::Log::Parse
+    February 8, 2014 (1.4.1) - Switched to using Perl-standard environment
+    variables for checking to run author tests. (Should now test cleanly on
+    Windows.)
+
     April 17, 2009 (1.4.0) - Simplified subclassing: No longer need to call
     "_set_current_position_as_next_line" in subclass. (A stub exists for
     backwards compatibility.)

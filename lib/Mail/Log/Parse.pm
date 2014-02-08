@@ -12,17 +12,17 @@ Mail::Log::Parse - Parse and return info in maillogs
 
   $object = Mail::Log::Parse->new({  log_file => '/path/to/logfile'  });
   %line_info = %{object->next()};
-  
+
   $line_num = $object->get_line_number();
-  
+
   if ( $object->go_forward($amount) ) {
     ...
   }
-  
+
   if ( $object->go_backward($amount) ) {
     ...
   }
-  
+
   %line_info = %{object->previous()};
 
 =head1 DESCRIPTION
@@ -61,7 +61,7 @@ use base qw(Exporter);
 BEGIN {
     use Exporter ();
     use vars qw($VERSION);
-    $VERSION     = '1.0400';
+    $VERSION     = '1.0401';
 }
 
 #
@@ -82,16 +82,16 @@ my %current_line;
 
 sub DESTROY {
 	my ($self) = @_;
-	
+
 	$log_info{refaddr $self}{filehandle}->close() if defined($log_info{refaddr $self}{filehandle});
-	
+
 	delete $log_info{refaddr $self};
 	delete $parse_buffer{refaddr $self};
 	delete $parse_buffer_start_line{refaddr $self};
 	delete $parse_buffer_size{refaddr $self};
 	delete $debug{refaddr $self};
 	delete $current_line{refaddr $self};
-	
+
 	return;
 }
 
@@ -108,19 +108,19 @@ use overload (
 							.' Line: '
 							.$current_line{$$self};
 					},
-	
+
 	# Boolean overloads to if we are usable.  (Have a filehandle.)
 	qw{bool} => sub { my ($self) = @_;
 						return defined($log_info{$$self}{'filehandle'});
 					},
-	
+
 	# Numeric context just doesn't mean anything.  Throw an error.
 	q{0+} => sub { Mail::Log::Exceptions->throw(q{Can't get a numeric value of a Mail::Log::Parse.} );
 				},
-	
+
 	# Heh.  Iterator context is the same as 'next'...
 	q{<>} => sub { return $_[0]->next(); },
-	
+
 	# Perl standard for everything else.
 	fallback => 1,
 			);
@@ -196,7 +196,7 @@ Example:
 
 sub set_logfile {
 	my ($self, $new_name) = @_;
-	
+
 	# Check to make sure the file exists,
 	# and then that we can read it, before accpeting the filename.
 	if ( -e $new_name ) {
@@ -249,7 +249,7 @@ sub set_logfile {
 
 =head2 next
 
-Returns a reference to a hash of the next parsable line of the log, or 'undef' on 
+Returns a reference to a hash of the next parsable line of the log, or 'undef' on
 end of file/failure.
 
 There are a couple of required keys that any parser must implement:
@@ -262,14 +262,14 @@ if possible), C<id> is the tracking ID for that message, as reported by the
 program, and C<text> is the text following any 'standard' headers.  (Usually,
 minus those already required keys.)
 
-This version is just a placeholder: It will return a 
+This version is just a placeholder: It will return a
 'Mail::Log::Exceptions::Unimplemented' exception if called.  Subclasses are
 expected to override the C<_parse_next_line> method to get an operable parser.
 (And that is the only method needed to be overridden for a working subclass.)
 
 Other 'standard' fields that are expected in a certain format (but are not
 required to always be present) are 'from', 'to', 'size', 'subject', delay.  'to'
-should point to an array of addresses.  (As listed in the log.  That includes 
+should point to an array of addresses.  (As listed in the log.  That includes
 angle brackets, usually.)
 
 Example:
@@ -288,16 +288,16 @@ or...
 
 sub next {
 	my ($self) = @_;
-	
+
 	# This is the same as $self->get_current_line();
 	# (Or at least it should be.  Done for speed.)
 	my $current_line = $current_line{$$self};
-	
+
 	if ( defined($parse_buffer{$$self})
 			and ( ($current_line+1) <= ($parse_buffer_start_line{$$self} + $#{$parse_buffer{$$self}}) )
 			and ( ($current_line+1) >= $parse_buffer_start_line{$$self})
 		) {
-		
+
 		# Increment where we are.
 		$current_line{$$self} = $current_line{$$self} + 1;
 
@@ -313,36 +313,36 @@ sub next {
 			$log_info{$$self}{filehandle}->setpos($log_info{$$self}->{line_positions}->[$current_line])
 				or Mail::Log::Exceptions::LogFile->throw("Error seeking to position: $!\n");
 		}
-		
+
 #		print STDERR 'Reading buffer for line '. $current_line .".\n" if $debug{refaddr $self};
-		
+
 		# Check if we've reached the end of the file.
 		# (And that we haven't gone back...)
-		if ( defined($parse_buffer{$$self}->[0]) 
+		if ( defined($parse_buffer{$$self}->[0])
 			and $#{$parse_buffer{$$self}} < $parse_buffer_size{$$self}
 			and $current_line >= $parse_buffer_start_line{$$self}
 			) {
 			return $parse_buffer{$$self}->[-1];
 		}
-		
+
 		# Clear the buffer.
 		@{$parse_buffer{$$self}} = ();
-		
+
 		# Read in the buffer.
 		READ_LOOP: for my $i (0...$parse_buffer_size{$$self}) {
 			$parse_buffer{$$self}->[$i] = $self->_parse_next_line();
 			last READ_LOOP unless defined $parse_buffer{$$self}->[$i];
 			$self->_set_position_as_next_line;
 		}
-		
+
 #use Data::Dumper;
 #print STDERR Data::Dumper->Dump($parse_buffer{refaddr $self});
-		
+
 		# Move the indexes back to the line we are reading.
 		# (Note the 'current line' direct access again...)
 		$parse_buffer_start_line{$$self} = $current_line{$$self} - $#{$parse_buffer{$$self}};
 		$self->go_to_line_number($parse_buffer_start_line{$$self});
-		
+
 		# Return the data.
 		return $parse_buffer{$$self}->[0];
 	}
@@ -389,10 +389,10 @@ Example:
 sub go_forward {
 	my $self = shift;
 	my $lines = shift;
-	
+
 	# Just because I'm paranoid.
 	$lines ||= 1;
-	
+
 	# If we've read the line before, go straight to it.
 	if ( ${$log_info{$$self}{line_positions}}[($current_line{$$self}+$lines)] ) {
 		$current_line{$$self} = $current_line{$$self} + $lines;
@@ -406,7 +406,7 @@ sub go_forward {
 
 		# Go to the last line we have.
 		$current_line{$$self} = $#{$log_info{$$self}{line_positions}};
-		
+
 		# Then read until we get to the line we want.
 		if ( $self->next() ) {
 			unshift @_, ($self, $lines_remaining - 1 );
@@ -420,7 +420,7 @@ sub go_forward {
 
 =head2 go_backward
 
-Goes backward a specified number of (logical) lines, or 1 if unspecified.  It will 
+Goes backward a specified number of (logical) lines, or 1 if unspecified.  It will
 throw an error if it fails to seek as requested.
 
 If the seek would go beyond the beginning of the file, it will go to the
@@ -480,7 +480,7 @@ Returns true on success.
 
 sub go_to_end {
 	my ($self) = @_;
-	
+
 	# Go to the end of what we have.
 	$current_line{$$self} = $#{$log_info{$$self}{line_positions}};
 
@@ -511,7 +511,7 @@ sub get_line_number () {
 	return $current_line{${$_[0]}};
 }
 
-=head2 go_to_line_number 
+=head2 go_to_line_number
 
 Goes to a specific logical line number.  (Preferably one that exits...)
 
@@ -537,7 +537,7 @@ sub go_to_line_number {
 
 sub _parse_next_line {
 	my ($self) = @_;
-	
+
 	Mail::Log::Exceptions::Unimplemented->throw("Method '_parse_next_line' needs to be implemented by the subclass.\n");
 }
 
@@ -589,7 +589,7 @@ a subclass:
 	# Some temp variables.
 	my $line;
 
-	# In a mixed-log enviornment, we can't count on any 
+	# In a mixed-log enviornment, we can't count on any
 	# particular line being something we can parse.  Keep
 	# going until we can.
 	while ( $line_info{program} !~ m/$program_name/ ) {
@@ -602,7 +602,7 @@ a subclass:
 
 	# Continue parsing
 	...
-	
+
 	return \%line_info;
  }
 
@@ -715,6 +715,9 @@ seeking through a file, both forwards and back.)
 
 =head1 HISTORY
 
+February 8, 2014 (1.4.1) - Switched to using Perl-standard environment variables
+for checking to run author tests.  (Should now test cleanly on Windows.)
+
 April 17, 2009 (1.4.0) - Simplified subclassing: No longer need to call
 C<_set_current_position_as_next_line> in subclass.  (A stub exists for backwards
 compatibility.)
@@ -737,7 +740,7 @@ Oct 24, 2008 - File::Temp now optional; only required for uncompressed files.
 
 Oct 14, 2008 - Found that I need File::Temp of at least version 0.17.
 
-Oct 13, 2008 - Fixed tests so they do a better job of checking if they 
+Oct 13, 2008 - Fixed tests so they do a better job of checking if they
 need to skip.
 
 Oct 6, 2008 - Initial version.

@@ -1,19 +1,22 @@
+NAME
+    Mail::Log::Parse - Parse and return info in maillogs
+
 SYNOPSIS
       use Mail::Log::Parse;
 
       $object = Mail::Log::Parse->new({  log_file => '/path/to/logfile'  });
       %line_info = %{object->next()};
-  
+
       $line_num = $object->get_line_number();
-  
+
       if ( $object->go_forward($amount) ) {
         ...
       }
-  
+
       if ( $object->go_backward($amount) ) {
         ...
       }
-  
+
       %line_info = %{object->previous()};
 
 DESCRIPTION
@@ -46,7 +49,7 @@ USAGE
 
       $object = Mail::Log::Parse->new({  log_file => '/path/to/logfile'  });
 
-    Note that it is an error to call any method other than `set_logfile' if
+    Note that it is an error to call any method other than "set_logfile" if
     you have not passed it in the constructor.
 
     Optional keys in the hash are 'buffer_length' and 'debug'. The buffer
@@ -61,7 +64,7 @@ USAGE
     true on success.
 
     Files can be compressed or uncompressed: If they are compressed, then
-    `IO::Uncompress::AnyUncompress' must be installed with the relevant
+    "IO::Uncompress::AnyUncompress" must be installed with the relevant
     decompression libraries. (As well as version 0.17 or better of
     File::Temp.) Currently only 'tgz', 'zip', 'gz', and 'bz2' archives are
     supported, but there is no technical reason not to support more. (It
@@ -84,15 +87,15 @@ USAGE
 
     timestamp, program, id, text.
 
-    Where `timestamp' must the the unix timestamp, `program' must be the
+    Where "timestamp" must the the unix timestamp, "program" must be the
     name of the program that reported the logline (Sub-programs are
-    recommended to be listed, if possible), `id' is the tracking ID for that
-    message, as reported by the program, and `text' is the text following
+    recommended to be listed, if possible), "id" is the tracking ID for that
+    message, as reported by the program, and "text" is the text following
     any 'standard' headers. (Usually, minus those already required keys.)
 
     This version is just a placeholder: It will return a
     'Mail::Log::Exceptions::Unimplemented' exception if called. Subclasses
-    are expected to override the `_parse_next_line' method to get an
+    are expected to override the "_parse_next_line" method to get an
     operable parser. (And that is the only method needed to be overridden
     for a working subclass.)
 
@@ -117,7 +120,7 @@ USAGE
     Returns a reference to a hash of the previous line of the log, or undef
     on failure/beginning of file.
 
-    See `next' for details: It works nearly exactly the same. (In fact, it
+    See "next" for details: It works nearly exactly the same. (In fact, it
     calls next as a parser.)
 
   go_forward
@@ -172,9 +175,9 @@ SUBCLASSING
     This class is useless without subclasses to handle specific file
     formats. As such, attempts have been made to make subclassing as
     painless as possible. In general, you should only ever have to implement
-    one method: `_parse_next_line'.
+    one method: "_parse_next_line".
 
-    `_parse_next_line' will be called whenever another line of the log needs
+    "_parse_next_line" will be called whenever another line of the log needs
     to be read. Its responsibility is to identify the next line, report
     where that is in the actual file, and to parse that line.
 
@@ -182,10 +185,10 @@ SUBCLASSING
     is a valid log line. It is expected to check first.
 
     Mail::Log::Parse is (as of v1.3) a cached inside-out object. If you
-    don't know what that means, ignore it: just writing `_parse_next_line'
+    don't know what that means, ignore it: just writing "_parse_next_line"
     correctly is enough. However, if you find you need to store sub-class
     object info for some reason, and want to use an inside-out object syntax
-    yourself, `$$self == refaddr $self'. Which is useful and fast.
+    yourself, "$$self == refaddr $self". Which is useful and fast.
 
     Speed *is* important. It is not unlikely for someone to try to parse
     through a week's worth of logs from a dozen boxes, where each day's log
@@ -211,7 +214,7 @@ SUBCLASSING
             # Some temp variables.
             my $line;
 
-            # In a mixed-log enviornment, we can't count on any 
+            # In a mixed-log enviornment, we can't count on any
             # particular line being something we can parse.  Keep
             # going until we can.
             while ( $line_info{program} !~ m/$program_name/ ) {
@@ -224,7 +227,7 @@ SUBCLASSING
 
             # Continue parsing
             ...
-        
+
             return \%line_info;
      }
 
@@ -254,14 +257,14 @@ UTILITY METHODS
     Avoid using unless actually needed.
 
 BUGS
-    `go_forward' and `go_backward' at the moment don't test for negative
+    "go_forward" and "go_backward" at the moment don't test for negative
     numbers. They may or may not work with a negative number of lines: It
     depends where you are in the file and what you've read so far.
 
     Those two methods should do slightly better on 'success' testing, to
     return better values. (They basically always return true at the moment.)
 
-    `get_line_number' will return one less than the true line number if you
+    "get_line_number" will return one less than the true line number if you
     are at the end of the file, and the buffer was completely filled. (So
     that the end of the file is the last space of the buffer.) Changing the
     buffer size or just going back and re-reading so that the buffer is
@@ -283,6 +286,38 @@ SEE ALSO
     Parse::Syslog::Mail, which does some of what this module does. (This
     module is a result of running into what that module *doesn't* support.
     Namely seeking through a file, both forwards and back.)
+
+HISTORY
+    February 8, 2014 (1.4.1) - Switched to using Perl-standard environment
+    variables for checking to run author tests. (Should now test cleanly on
+    Windows.)
+
+    April 17, 2009 (1.4.0) - Simplified subclassing: No longer need to call
+    "_set_current_position_as_next_line" in subclass. (A stub exists for
+    backwards compatibility.)
+
+    April 9, 2009 (1.3.1) - Documentation fixes, better handling of trying
+    to work without a valid logfile.
+
+    Dec 23, 2008 (1.3.0) - Further code speedups. Now stores a cache of the
+    refaddr for easy and quick access.
+
+    Dec 09, 2008 (1.2.10) - Profiled and sped up code. (Cut processing time
+    in half for some cases.)
+
+    Nov 28, 2008 - Documentation fixes.
+
+    Nov 18, 2008 - Now buffers reading, and prefers data from the buffer.
+
+    Oct 24, 2008 - File::Temp now optional; only required for uncompressed
+    files. Added go_to_line_number for slightly better functionality.
+
+    Oct 14, 2008 - Found that I need File::Temp of at least version 0.17.
+
+    Oct 13, 2008 - Fixed tests so they do a better job of checking if they
+    need to skip.
+
+    Oct 6, 2008 - Initial version.
 
 COPYRIGHT and LICENSE
     Copyright (c) 2008 Daniel T. Staal. All rights reserved. This program is

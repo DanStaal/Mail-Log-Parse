@@ -19,3 +19,4 @@ t/kwalitee.t
 t/pod-coverage.t
 t/pod-spelling.t
 Todo
+META.json
