@@ -61,7 +61,7 @@ use base qw(Exporter);
 BEGIN {
     use Exporter ();
     use vars qw($VERSION);
-    $VERSION     = '1.0401';
+    $VERSION     = '1.0402';
 }
 
 #
@@ -714,6 +714,10 @@ seeking through a file, both forwards and back.)
 =for readme stop
 
 =head1 HISTORY
+
+November 14, 2015 (1.4.2) - Switched from depreciated 'Module::Build::ModuleInfo
+to it's replacement 'Module::Metadata' and included it in configure_requires.
+(As it is no longer part of the Module::Build package.)
 
 February 8, 2014 (1.4.1) - Switched to using Perl-standard environment variables
 for checking to run author tests.  (Should now test cleanly on Windows.)

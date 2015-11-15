@@ -4,7 +4,7 @@
       "Daniel Staal - <DStaal@usa.net>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Module::Build version 0.4204",
+   "generated_by" : "Module::Build version 0.4205",
    "license" : [
       "perl_5"
    ],
@@ -23,7 +23,8 @@
       },
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.42"
+            "Module::Build" : "0.42",
+            "Module::Metadata" : "0"
          }
       },
       "runtime" : {
@@ -41,7 +42,7 @@
    "provides" : {
       "Mail::Log::Parse" : {
          "file" : "lib/Mail/Log/Parse.pm",
-         "version" : "1.0401"
+         "version" : "1.0402"
       },
       "Mail::Log::Parse::Postfix" : {
          "file" : "lib/Mail/Log/Parse/Postfix.pm",
@@ -54,7 +55,7 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "1.0401",
+   "version" : "1.0402",
    "x_optional_features" : {
       "compressed_files" : {
          "description" : "Allows work with compressed files.",

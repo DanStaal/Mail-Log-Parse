@@ -5,6 +5,7 @@ lib/Mail/Log/Parse/Postfix.pm
 LICENSE
 Makefile.PL
 MANIFEST
+META.json
 META.yml
 README
 t/001_load.t
@@ -19,4 +20,3 @@ t/kwalitee.t
 t/pod-coverage.t
 t/pod-spelling.t
 Todo
-META.json
